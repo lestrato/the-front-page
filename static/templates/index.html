@@ -1,0 +1,247 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>{% block head_title %}the front page{% endblock %}</title>
+<!-- <link rel="shortcut icon" href="{{STATIC_URL}}images/favicon.ico" /> -->
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="stylesheet" media="screen" type="text/css" href="{% static "bootstrap/css/bootstrap.css" %}">
+<link rel="shortcut icon" href="{% static "images/favicon.ico" %}" type="image/x-icon">
+<link rel="icon" href="{% static "images/favicon.ico" %}" type="image/x-icon">
+
+<!-- 3rd party vendor stylesheets -->
+<link href="{% static "font-awesome/css/font-awesome.min.css" %}" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+
+<!-- main (legacy) stylesheet -->
+<link rel="stylesheet" media="screen" type="text/css" href="{% static "css/crawler.css" %}">
+</head>
+
+<body>
+<div id="wrapper" class="container">
+<div id="wrapper-body">
+    <h1 id="header">
+        <a href="/">the front page</a>
+        <div id="weather" class="pull-right" style="display: inline"></div>
+    </h1>
+    <hr class="hr-thin">
+
+    <h3 id="page-header">
+      <!-- {% if not search_input %}<i class="fa fa-newspaper-o fa-fw"></i> news{% else %}/r/{{ search_input|lower }}{% endif %} -->
+        <div class="tab-content">
+            <div class="tab-pane active section1"><i class="fa fa-newspaper-o fa-fw"></i> news</div>
+            <div class="tab-pane section2"><i class="fa fa-users fa-fw"></i> community</div>
+            <div class="tab-pane section3"><i class="fa fa-camera-retro fa-fw"></i> media</div>
+            <div class="tab-pane section4"><i class="fa fa-paint-brush fa-fw"></i> art</div>
+            <div class="tab-pane section5"><i class="fa fa-smile-o fa-fw"></i> funny</div>
+            <div class="tab-pane section6"><i class="fa fa-gamepad fa-fw"></i> gaming</div>
+            <div class="tab-pane section7"><i class="fa fa-tag fa-fw"></i> about</div>
+        </div>
+        <div class="pull-right" id="clock"></div>
+    </h3>
+
+    <div id="nav-panel">
+        <ul class="nav nav-tabs nav-stacked" data-offset-top="120" data-spy="affix">
+            <li class="active"><a data-target=".section1"><i class="fa fa-newspaper-o fa-fw"></i> <div class="nav-panel-text">news</div></a></li>
+            <li><a data-target=".section2"><i class="fa fa-users fa-fw"></i> <div class="nav-panel-text">community</div></a></li>
+            <li><a data-target=".section3"><i class="fa fa-camera-retro fa-fw"></i> <div class="nav-panel-text">media</div></a></li>
+            <li><a data-target=".section4"><i class="fa fa-paint-brush fa-fw"></i> <div class="nav-panel-text">art</div></a></li>
+            <li><a data-target=".section5"><i class="fa fa-smile-o fa-fw"></i> <div class="nav-panel-text">funny</div></a></li>
+            <li><a data-target=".section6"><i class="fa fa-gamepad fa-fw"></i> <div class="nav-panel-text">gaming</div></a></li>
+        </ul>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane active section1">
+            {% include "table.html" with all_posts=all_posts.news %}
+        </div>
+        <div class="tab-pane section2">
+            {% include "table.html" with all_posts=all_posts.community %}
+        </div>
+        <div class="tab-pane section3">
+            {% include "table.html" with all_posts=all_posts.media %}
+        </div>
+        <div class="tab-pane section4">
+            {% include "table.html" with all_posts=all_posts.art %}
+        </div>
+        <div class="tab-pane section5">
+            {% include "table.html" with all_posts=all_posts.funny %}
+        </div>
+        <div class="tab-pane section6">
+            {% include "table.html" with all_posts=all_posts.gaming %}
+        </div>
+        <div class="tab-pane section7">
+            <hr style="margin-top: 10px;">
+            <h4><u>how it works</u></h4>
+            posts are interpreted from reddit's JSON, kindly offered through their API.<br>
+            the subreddit we parse through is a 'multi' subreddit containing the following:
+            <ul>
+                <li><b>news</b>: /r/news, /r/worldnews, /r/upliftingnews</li>
+                <li><b>community</b>: /r/iama, /r/askreddit, /r/tifu</li>
+                <li><b>media</b>: /r/videos, /r/pics, /r/gifs</li>
+                <li><b>art</b>: /r/music, /r/art, /r/listentothis, /r/movies</li>
+                <li><b>funny</b>: /r/funny, /r/programmerhumor, /r/jokes, /r/blackpeopletwitter</li>
+                <li><b>gaming</b>: /r/gaming, /r/leagueoflegends, /r/hearthstone</li>
+            </ul>
+            upon a page request, the JSON is fetched and stored into our database.<br>
+            to reduce the strain on reddit's API, we fetch posts a maximum one time every 10 minutes.<br>
+            afterwards, the next page request will try to refetch the newest JSON.<br>
+            the last fetch
+            {% if last_fetched_difference %}
+                happened
+                <i><div id="last-fetched" style="display: hidden;">
+                    {{ last_fetched_difference }}
+                </div></i>
+                {% if last_fetched_difference >= 600 %}
+                    <div data-toggle="tooltip" data-placement="bottom" style="display: inline; color:#337ab7;"
+                    title="The reddit servers were too busy to process the last request. Try refreshing again.">
+                        [<strong>?</strong>]
+                    </div>
+                {% endif %}
+            {% else %}<i> hasn't happened yet.</i>
+            {% endif %}
+            <h4><u>contact</u></h4>
+            <b>the front page</b> was made with <i class="fa fa-heart"></i> by <a href="https://www.linkedin.com">strato</a>.<br>
+            have an issue? report it <a href="https://www.github.com">here.</a>
+
+        </div>
+    </div>
+    <!-- Modal HTML -->
+    <div id="mediaModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                    <div class="mediaContainer"></div>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+
+    <div id="site-footer" class="container-fluid">
+        <hr class="hr-thin">
+        <ul class="nav nav-tabs">
+            <li><a data-target=".section7"><i class="fa fa-tag fa-fw"></i> about</a></li>
+        </ul>
+    </div>
+</div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.simpleWeather/3.1.0/jquery.simpleWeather.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var getIP = 'http://ip-api.com/json/';
+        $.getJSON(getIP).done(function(location) {
+            console.log(location.city);
+            console.log(location.region);
+            var location_string = location.city + ', ' + location.region;
+
+            $.simpleWeather({
+              location: location_string,
+              woeid: '',
+              unit: 'c',
+              success: function(weather) {
+                html = '<p><i class="icon-weather icon-'+weather.code+'"></i> '+weather.temp+'&deg;'+weather.units.temp+'<div id="location"> in Mississauga, ON</div></p>';
+
+                $("#weather").html(html);
+              },
+              error: function(error) {
+                $("#weather").html('<p>'+error+'</p>');
+              }
+            });
+        });
+      });
+  </script>
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+<script>
+    $('#nav-panel a').click(function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+        $('#site-footer').find('.active').toggleClass('active');
+
+    });
+    $('#site-footer a').click(function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+        // remove active class
+        $('#nav-panel').find('.active').toggleClass('active');
+    });
+</script>
+<script>
+    var last_fetched = parseInt($("#last-fetched").html(), 10);
+
+    function updateClock()
+    {
+        var currentTime = new Date();
+        var currentTimeString = currentTime.toLocaleTimeString();
+
+        $("#clock").html(currentTimeString);
+     }
+
+    function updateLastFetched()
+    {
+        // get last-fetched
+        last_fetched += 1;
+        // formatting
+        if (last_fetched < 60) {
+            str_last_fetched = last_fetched.toString() + ' seconds ago.';
+        } else if (60 <= last_fetched && last_fetched < 120) {
+            str_last_fetched = '1 minute ago.';
+        } else if (120 <= last_fetched && last_fetched < 3600) {
+            str_last_fetched = Math.floor((last_fetched/60)).toString() + ' minutes ago.';
+        } else if (3600 <= last_fetched && last_fetched < 7200) {
+            str_last_fetched = '1 hour ago.';
+        } else if (7200 <= last_fetched) {
+            str_last_fetched = Math.floor((last_fetched/3600)).toString() + ' hours ago.';
+        }
+        $("#last-fetched").html(str_last_fetched);
+    }
+
+    $(document).ready(function()
+    {
+       updateClock();
+       updateLastFetched();
+       $("#last-fetched").css('display', 'inline');
+       setInterval('updateClock()', 1000);
+       setInterval('updateLastFetched()', 1000);
+
+    });
+</script>
+<script>
+  function showModal(content) {
+    $('.mediaContainer').html(content);
+    // autoplay iframe youtube videos
+    var src = $('.mediaContainer').find('iframe').attr('src') + '&autoplay=1';
+    $('.mediaContainer').find('iframe').attr('src', src);
+    $('#mediaModal').modal({keyboard: true});
+    $("#mediaModal").modal('show');
+  }
+
+  $('#mediaModal').on('hidden.bs.modal', function () {
+    $('.mediaContainer').empty();
+  });
+
+  $(document).on('keydown',function(e) {
+    if (e.keyCode == 27) {
+        $('#mediaModal').modal('hide');
+    }
+  });
+</script>
+
+</body>
+</html>
